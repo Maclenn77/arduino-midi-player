@@ -1,45 +1,44 @@
 /**
-   Mini piano for Arduino.
-
-   You can control the colorful buttons with your keyboard:
-   After starting the simulation, click anywhere in the diagram to focus it.
-   Then press any key between 1 and 8 to play the piano (1 is the lowest note,
-   8 is the highest).
-
-   Copyright (C) 2021, Uri Shaked. Released under the MIT License.
+   Midi Player Arduino
 */
 
 #include "pitches.h"
 #include "melodies.h"
+#include "changeState.h"
 #define SPEAKER_PIN 8
 
-const uint8_t buttonPins[] = {12, 11};
-const int buttonMelodies[] = {
-    1, 2};
-const int numTones = sizeof(buttonPins) / sizeof(buttonPins[0]);
+const int numTones = sizeof(controlPins) / sizeof(controlPins[0]);
 
 void setup()
 {
   for (uint8_t i = 0; i < numTones; i++)
   {
-    pinMode(buttonPins[i], INPUT_PULLUP);
+    pinMode(controlPins[i], INPUT_PULLUP);
   }
   pinMode(SPEAKER_PIN, OUTPUT);
+  Serial.begin(9600);
 }
 
 void loop()
 {
-  int song = 0;
-  for (uint8_t i = 0; i < numTones; i++)
+  int action = 0;
+  int nextState = 0;
+  if (digitalRead(rightPin) == LOW)
   {
-    if (digitalRead(buttonPins[i]) == LOW)
-    {
-      song = buttonMelodies[i];
-    }
+    nextState = 1;
+    changeState(buttonState, nextState);
+    delay(200);
   }
-  if (song)
+  else if (digitalRead(leftPin) == LOW)
   {
-    sing(song);
+    nextState = -1;
+    changeState(buttonState, nextState);
+    delay(200);
+  }
+
+  if (digitalRead(playPin) == LOW)
+  {
+    sing(buttonState, SPEAKER_PIN);
   }
   else
   {

@@ -6,7 +6,6 @@
 */
 #include "pitches.h"
 
-#define melodyPin 8
 // Mario main theme melody
 int melody[] = {
     NOTE_E7, NOTE_E7, 0, NOTE_E7,
@@ -161,7 +160,7 @@ int underworld_tempo[] = {
     10, 10, 10,
     3, 3, 3};
 
-void buzz(int targetPin, long frequency, long length)
+void buzz(int speakerPin, long frequency, long length)
 {
   digitalWrite(13, HIGH);
   long delayValue = 1000000 / frequency / 2; // calculate the delay value between transitions
@@ -171,10 +170,14 @@ void buzz(int targetPin, long frequency, long length)
   //// multiply frequency, which is really cycles per second, by the number of seconds to
   //// get the total number of cycles to produce
   for (long i = 0; i < numCycles; i++)
-  {                                // for the calculated length of time...
-    digitalWrite(targetPin, HIGH); // write the buzzer pin high to push out the diaphram
+  { // for the calculated length of time...
+    if (i % 2 == 0)
+    {
+      digitalWrite(speakerPin, HIGH);
+    }
+    // write the buzzer pin high to push out the diaphram
     delayMicroseconds(delayValue); // wait for the calculated delay value
-    digitalWrite(targetPin, LOW);  // write the buzzer pin low to pull back the diaphram
+    digitalWrite(speakerPin, LOW);
     delayMicroseconds(delayValue); // wait again or the calculated delay value
   }
   digitalWrite(13, LOW);
@@ -182,10 +185,12 @@ void buzz(int targetPin, long frequency, long length)
 
 int song = 0;
 
-void sing(int s)
+void sing(int s, int speaker)
 {
 
   song = s;
+  int speakerPin = speaker;
+
   if (song == 1)
   {
     int size = sizeof(melody) / sizeof(int);
@@ -197,7 +202,7 @@ void sing(int s)
       // e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
       int noteDuration = 1000 / tempo[thisNote];
 
-      buzz(melodyPin, melody[thisNote], noteDuration);
+      buzz(speakerPin, melody[thisNote], noteDuration);
 
       // to distinguish the notes, set a minimum time between them.
       // the note's duration + 30% seems to work well:
@@ -205,7 +210,7 @@ void sing(int s)
       delay(pauseBetweenNotes);
 
       // stop the tone playing:
-      buzz(melodyPin, 0, noteDuration);
+      buzz(speakerPin, 0, noteDuration);
     }
   }
   else if (song == 2)
@@ -219,7 +224,7 @@ void sing(int s)
       // e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
       int noteDuration = 1000 / underworld_tempo[thisNote];
 
-      buzz(melodyPin, underworld_melody[thisNote], noteDuration);
+      buzz(speakerPin, underworld_melody[thisNote], noteDuration);
 
       // to distinguish the notes, set a minimum time between them.
       // the note's duration + 30% seems to work well:
@@ -227,7 +232,7 @@ void sing(int s)
       delay(pauseBetweenNotes);
 
       // stop the tone playing:
-      buzz(melodyPin, 0, noteDuration);
+      buzz(speakerPin, 0, noteDuration);
     }
   }
 };
